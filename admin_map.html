@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazard Zone Admin - Mauritius</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .color-option.selected {
+            border-color: #2c3e50;
+        }
+
+        .color-high { background: #e74c3c; }
+        .color-medium { background: #f39c12; }
+        .color-low { background: #3498db; }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Zones List */
+        .zones-list {
+            margin-top: 20px;
+        }
+
+        .zone-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .zone-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .zone-item.high { border-left-color: #e74c3c; }
+        .zone-item.medium { border-left-color: #f39c12; }
+        .zone-item.low { border-left-color: #3498db; }
+
+        .zone-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .zone-details {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .zone-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .zone-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #adminMap {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Drawing Instructions */
+        .drawing-instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .instructions-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .instructions-list {
+            list-style: none;
+            font-size: 14px;
+        }
+
+        .instructions-list li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .instructions-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3498db;
+        }
+
+        /* Hidden file input */
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h1>🚨 Hazard Zone Admin</h1>
+            
+            <div class="control-panel">
+                <h3>Add New Hazard Zone</h3>
+                
+                <div class="control-group">
+                    <label for="zoneName">Zone Name</label>
+                    <input type="text" id="zoneName" placeholder="e.g., Cyclone Risk Area">
+                </div>
+
+                <div class="control-group">
+                    <label for="hazardType">Hazard Type</label>
+                    <select id="hazardType">
+                        <option value="cyclone">Cyclone</option>
+                        <option value="flood">Flood</option>
+                        <option value="tsunami">Tsunami</option>
+                        <option value="landslide">Landslide</option>
+                        <option value="volcano">Volcanic Activity</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Severity Level</label>
+                    <div class="color-options">
+                        <div class="color-option color-high selected" data-severity="high" data-color="#e74c3c"></div>
+                        <div class="color-option color-medium" data-severity="medium" data-color="#f39c12"></div>
+                        <div class="color-option color-low" data-severity="low" data-color="#3498db"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="zoneRadius">Radius (meters)</label>
+                    <input type="range" id="zoneRadius" min="500" max="20000" value="5000" step="500">
+                    <span id="radiusValue">5000 meters</span>
+                </div>
+
+                <div class="control-group">
+                    <label for="zoneDescription">Description</label>
+                    <textarea id="zoneDescription" rows="3" placeholder="Additional details about the hazard..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" id="startDrawing">📍 Start Drawing on Map</button>
+                <button class="btn btn-success" id="saveZone" disabled>💾 Save Hazard Zone</button>
+                <button class="btn btn-danger" id="cancelDrawing" disabled>❌ Cancel Drawing</button>
+            </div>
+
+            <!-- Export Controls -->
+            <div class="control-panel">
+                <h3>Data Management</h3>
+                <button class="btn btn-primary" id="exportJson">📥 Export JSON</button>
+                <button class="btn btn-success" id="importJson">📤 Import JSON</button>
+                <input type="file" id="fileInput" accept=".json">
+                <button class="btn btn-danger" id="clearAll">🗑️ Clear All Zones</button>
+            </div>
+
+            <!-- Zones List -->
+            <div class="zones-list" id="zonesList">
+                <h3>Active Hazard Zones</h3>
+                <div id="zonesContainer"></div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="adminMap"></div>
+            
+            <!-- Drawing Instructions -->
+            <div class="drawing-instructions" id="drawingInstructions">
+                <div class="instructions-title">How to Draw Hazard Zones:</div>
+                <ul class="instructions-list">
+                    <li>Click "Start Drawing" to begin</li>
+                    <li>Click anywhere on the map to place zone center</li>
+                    <li>Adjust radius using slider or mouse wheel</li>
+                    <li>Configure zone details in sidebar</li>
+                    <li>Click "Save" when done</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // We'll add the JavaScript functionality in the next step
+        console.log('Hazard Zone Admin Panel Loaded');
+    </script>
+</body>
+</html>

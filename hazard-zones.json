@@ -1,6 +1,47 @@
 {
-  "lastUpdated": "2025-11-02T19:51:03.767Z",
+  "lastUpdated": "2025-11-03T08:13:30.304Z",
   "hazardZones": [
-    
+    {
+      "id": "zone_1762157571682",
+      "name": "High Risk",
+      "type": "cyclone",
+      "severity": "medium",
+      "color": "#f39c12",
+      "center": {
+        "lat": -19.999080069701108,
+        "lng": 57.60681152343751
+      },
+      "radius": 9500,
+      "description": "",
+      "createdAt": "2025-11-03T08:12:51.682Z"
+    },
+    {
+      "id": "zone_1762157591608",
+      "name": "rain area",
+      "type": "cyclone",
+      "severity": "low",
+      "color": "#3498db",
+      "center": {
+        "lat": -20.09062777208991,
+        "lng": 57.514801025390625
+      },
+      "radius": 7000,
+      "description": "",
+      "createdAt": "2025-11-03T08:13:11.608Z"
+    },
+    {
+      "id": "zone_1762157606792",
+      "name": "Flood Area",
+      "type": "cyclone",
+      "severity": "low",
+      "color": "#3498db",
+      "center": {
+        "lat": -20.084182498621352,
+        "lng": 57.674102783203125
+      },
+      "radius": 7000,
+      "description": "",
+      "createdAt": "2025-11-03T08:13:26.792Z"
+    }
   ]
 }
